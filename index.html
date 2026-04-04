@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcane Breaker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="hud">
+      <h1>🔮 Arcane Breaker</h1>
+      <div class="bars">
+        <label>Health <progress id="healthBar" max="100" value="100"></progress> <span id="healthText">100</span></label>
+        <label>Mana <progress id="manaBar" max="100" value="100"></progress> <span id="manaText">100</span></label>
+      </div>
+      <p class="help">Move: ⬅️ ➡️ / A D · Launch: Space · Spells: Q Fireball · W Lightning · E Force Field · R Heal</p>
+      <p id="status">Break all enchanted bricks!</p>
+    </section>
+    <canvas id="game" width="920" height="620" aria-label="Arcane Breaker game"></canvas>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
