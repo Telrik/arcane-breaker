@@ -19,13 +19,7 @@ In addition to classic breakout mechanics, you manage **health** and **mana** an
   - **W**: Lightning (chain damage to bricks)
   - **E**: Force Field (temporary protection)
   - **R**: Heal (restore health)
-- Brick families and mechanics:
-  - **Wood** bricks with grain texture (light durability)
-  - **Iron** bricks (high durability)
-  - **Gold** bricks that reward mana when destroyed
-  - **Fire Ward** bricks that can only be damaged by fireball attacks
-  - **Ancient** very-rare bricks that require 10 hits
-- Ball pacing curve: starts slower and accelerates as rallies continue.
+- Brick durability tiers and visual effects.
 - Score + combo tracking.
 - Victory and defeat states.
 
@@ -63,4 +57,5 @@ Then open:
 
 - `index.html` — main page, HUD and canvas.
 - `style.css` — visual styling.
-- `game.js` — gameplay logic, rendering, textures and spell effects.
+- `game.js` — gameplay logic and rendering.
+
