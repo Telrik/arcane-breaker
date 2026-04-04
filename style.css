@@ -10,18 +10,41 @@ body {
   margin: 0;
   font-family: "Trebuchet MS", system-ui, sans-serif;
   color: #eef3ff;
-  background: radial-gradient(circle at top, #212850, #0b0d1d 72%);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(120, 145, 255, 0.18), transparent 24%),
+    radial-gradient(circle at 80% 22%, rgba(138, 248, 255, 0.16), transparent 26%),
+    radial-gradient(circle at top, #212850, #0b0d1d 72%);
+  overflow-x: hidden;
+}
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+body::before {
+  background-image: radial-gradient(circle, rgba(255,255,255,.65) 1px, transparent 1.5px);
+  background-size: 120px 120px;
+  opacity: 0.22;
+  animation: starDrift 36s linear infinite;
+}
+body::after {
+  background: linear-gradient(120deg, rgba(98,140,255,.06), rgba(130,255,242,.08), rgba(225,138,255,.05));
+  animation: aurora 12s ease-in-out infinite alternate;
 }
 .layout {
   width: min(980px, 95vw);
   margin: 1rem auto;
 }
 .hud {
-  background: rgba(24, 27, 53, 0.9);
-  border: 1px solid #343b6e;
+  background: rgba(24, 27, 53, 0.85);
+  border: 1px solid #3e4788;
   border-radius: 12px;
   padding: 0.8rem 1rem;
   margin-bottom: 0.8rem;
+  box-shadow: 0 0 28px rgba(106, 142, 255, 0.2);
 }
 h1 { margin: 0 0 0.5rem; font-size: 1.4rem; }
 .bars { display: grid; gap: 0.4rem; }
@@ -32,11 +55,21 @@ progress {
   accent-color: var(--accent);
 }
 .help, #status { margin: 0.5rem 0 0; font-size: 0.95rem; color: #c8d1ff; }
-#status { color: #ffe18a; min-height: 1.4rem; }
+#status { color: #ffe18a; min-height: 1.4rem; text-shadow: 0 0 12px rgba(255, 225, 138, 0.35); }
 canvas {
   width: 100%;
   border-radius: 12px;
   border: 2px solid #3c468b;
   background: linear-gradient(180deg, #101536, #090d22);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35), 0 0 30px rgba(89, 117, 255, 0.26);
+}
+
+@keyframes starDrift {
+  from { transform: translateY(0px); }
+  to { transform: translateY(120px); }
+}
+
+@keyframes aurora {
+  from { filter: hue-rotate(0deg); opacity: 0.6; }
+  to { filter: hue-rotate(35deg); opacity: 0.85; }
 }
