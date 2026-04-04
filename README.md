@@ -14,6 +14,9 @@ This version restores the project README and expands gameplay with stronger visu
   - Ball trails
   - Spark bursts
   - Elemental overlays (burning/frozen bricks)
+- Material brick textures and resistances:
+  - **Wood**, **Stone**, **Iron**, **Titanium**
+  - **Titanium** can only be damaged by **Fireball (Q)**
 - Expanded spellbook with **6 spells**.
 - Health + mana resource loop with HUD bars.
 - Score and combo scaling for aggressive play.
@@ -37,6 +40,7 @@ This version restores the project README and expands gameplay with stronger visu
 - You lose health when the orb falls below the paddle.
 - Mana regenerates continuously over time.
 - Bricks can have multiple hit points.
+- The orb now launches slower and continuously accelerates while in play.
 - Burning and frozen effects stack tactical pressure on brick waves.
 - Clear all bricks to win.
 
