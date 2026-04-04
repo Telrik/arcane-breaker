@@ -23,7 +23,19 @@ const state = {
   trails: [],
   bricks: [],
   paddle: { x: 390, y: 585, w: 140, h: 18, speed: 8 },
-  ball: { x: 460, y: 560, r: 9, vx: 5, vy: -5, stuck: true, fireball: false },
+  ball: {
+    x: 460,
+    y: 560,
+    r: 9,
+    vx: 2.6,
+    vy: -2.6,
+    speed: 3.6,
+    minSpeed: 3.6,
+    maxSpeed: 10.2,
+    accel: 0.011,
+    stuck: true,
+    fireball: false,
+  },
 };
 
 function buildLevel() {
@@ -34,15 +46,20 @@ function buildLevel() {
   const marginX = 55;
   const marginY = 70;
   const width = (canvas.width - marginX * 2 - gap * (cols - 1)) / cols;
+  const materials = ["wood", "stone", "iron", "titanium"];
+  const durability = { wood: 2, stone: 3, iron: 4, titanium: 8 };
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const kind = (r + c + state.level) % 4;
+      const material = materials[(r + c + state.level) % materials.length];
+      const hp = durability[material];
       state.bricks.push({
         x: marginX + c * (width + gap),
         y: marginY + r * 32,
         w: width,
         h: 26,
-        hp: kind === 0 ? 3 : kind === 1 ? 2 : 1,
+        hp,
+        maxHp: hp,
+        material,
         burning: 0,
         frozen: 0,
         glow: Math.random() * Math.PI * 2,
@@ -59,6 +76,16 @@ function buildLevel() {
 
 function setStatus(text) {
   statusEl.textContent = text;
+}
+
+function launchBall() {
+  if (!state.ball.stuck) return;
+  const ball = state.ball;
+  ball.stuck = false;
+  ball.speed = ball.minSpeed;
+  const angle = -Math.PI / 2 + (Math.random() * 0.5 - 0.25);
+  ball.vx = Math.cos(angle) * ball.speed;
+  ball.vy = Math.sin(angle) * ball.speed;
 }
 
 function cast(cost, name, fn) {
@@ -143,7 +170,7 @@ window.addEventListener("keydown", (e) => {
   state.keys.add(key);
   if (key === " ") {
     e.preventDefault();
-    state.ball.stuck = false;
+    launchBall();
   }
   if (key === "q") fireballSpell();
   if (key === "w") lightningSpell();
@@ -168,7 +195,12 @@ function damagePlayer(amount) {
   }
 }
 
-function hitBrick(brick, dmg, ignites = false) {
+function hitBrick(brick, dmg, options = {}) {
+  const { ignites = false, source = "impact" } = options;
+  if (brick.material === "titanium" && source !== "fireball") {
+    state.sparks.push({ x: brick.x + brick.w / 2, y: brick.y + brick.h / 2, life: 14, lightning: true });
+    return;
+  }
   const extra = brick.frozen > 0 ? 1 : 0;
   brick.hp -= dmg + extra;
   if (ignites && brick.hp > 0) brick.burning = 240;
@@ -193,6 +225,11 @@ function update() {
     ball.x = p.x + p.w / 2;
     ball.y = p.y - ball.r - 1;
   } else {
+    ball.speed = Math.min(ball.maxSpeed, ball.speed + ball.accel);
+    const mag = Math.hypot(ball.vx, ball.vy) || 1;
+    ball.vx = (ball.vx / mag) * ball.speed;
+    ball.vy = (ball.vy / mag) * ball.speed;
+
     ball.x += ball.vx;
     ball.y += ball.vy;
 
@@ -203,8 +240,9 @@ function update() {
 
     if (ball.y + ball.r > canvas.height) {
       ball.stuck = true;
-      ball.vx = (Math.random() * 6 - 3) || 2;
-      ball.vy = -5;
+      ball.speed = ball.minSpeed;
+      ball.vx = 2.6;
+      ball.vy = -2.6;
       damagePlayer(14);
     }
 
@@ -216,14 +254,20 @@ function update() {
       ball.vy > 0
     ) {
       const impact = (ball.x - (p.x + p.w / 2)) / (p.w / 2);
-      ball.vx = impact * 6.5;
-      ball.vy = -Math.abs(5.2 + Math.abs(impact));
+      ball.speed = Math.min(ball.maxSpeed, ball.speed + 0.18);
+      const bounceAngle = impact * 1.12;
+      ball.vx = Math.sin(bounceAngle) * ball.speed;
+      ball.vy = -Math.cos(bounceAngle) * ball.speed;
     }
   }
 
   for (const projectile of state.projectiles) {
+    projectile.age = (projectile.age || 0) + 1;
     projectile.x += projectile.vx;
     projectile.y += projectile.vy;
+    if (projectile.kind === "fire") {
+      state.trails.push({ x: projectile.x, y: projectile.y + projectile.r * 0.8, life: 18, fire: true, ember: true });
+    }
     projectile.dead = projectile.y < -24 || projectile.y > canvas.height + 24;
   }
 
@@ -232,7 +276,7 @@ function update() {
     b.glow += 0.02;
     if (b.burning > 0) {
       b.burning--;
-      if (b.burning % 32 === 0) hitBrick(b, 1, false);
+      if (b.burning % 32 === 0) hitBrick(b, 1, { source: "burn" });
     }
     if (b.frozen > 0) b.frozen--;
 
@@ -243,7 +287,7 @@ function update() {
       ball.y + ball.r > b.y &&
       ball.y - ball.r < b.y + b.h
     ) {
-      hitBrick(b, ball.fireball ? 2 : 1, ball.fireball);
+      hitBrick(b, ball.fireball ? 2 : 1, { ignites: ball.fireball, source: ball.fireball ? "fireball" : "ball" });
       ball.vy *= -1;
       state.sparks.push({ x: ball.x, y: ball.y, life: 20, lightning: false });
     }
@@ -257,10 +301,10 @@ function update() {
       ) {
         projectile.dead = true;
         if (projectile.kind === "meteor") {
-          hitBrick(b, 3, true);
+          hitBrick(b, 3, { ignites: true, source: "meteor" });
           state.sparks.push({ x: projectile.x, y: projectile.y, life: 26, lightning: false, meteor: true });
         } else {
-          hitBrick(b, 2, true);
+          hitBrick(b, 2, { ignites: true, source: "fireball" });
         }
       }
     }
@@ -286,9 +330,53 @@ function update() {
 }
 
 function drawBrick(b) {
-  const hue = b.hp === 3 ? 280 : b.hp === 2 ? 220 : 180;
-  ctx.fillStyle = `hsl(${hue} 70% ${40 + Math.sin(b.glow) * 8}%)`;
+  const hpRatio = b.hp / b.maxHp;
+  if (b.material === "wood") {
+    ctx.fillStyle = `hsl(28 54% ${30 + hpRatio * 18}%)`;
+  } else if (b.material === "stone") {
+    ctx.fillStyle = `hsl(210 12% ${35 + hpRatio * 16}%)`;
+  } else if (b.material === "iron") {
+    ctx.fillStyle = `hsl(210 24% ${32 + hpRatio * 14}%)`;
+  } else {
+    ctx.fillStyle = `hsl(272 55% ${28 + hpRatio * 12}%)`;
+  }
   ctx.fillRect(b.x, b.y, b.w, b.h);
+
+  if (b.material === "wood") {
+    ctx.strokeStyle = "rgba(80,38,10,0.45)";
+    for (let i = 3; i < b.h; i += 6) {
+      ctx.beginPath();
+      ctx.moveTo(b.x + 1, b.y + i);
+      ctx.lineTo(b.x + b.w - 1, b.y + i + Math.sin(b.glow + i) * 1.5);
+      ctx.stroke();
+    }
+  } else if (b.material === "stone") {
+    for (let i = 0; i < 12; i++) {
+      ctx.fillStyle = `rgba(255,255,255,${0.06 + Math.random() * 0.14})`;
+      ctx.fillRect(b.x + 4 + Math.random() * (b.w - 8), b.y + 4 + Math.random() * (b.h - 8), 2, 2);
+    }
+  } else if (b.material === "iron") {
+    ctx.fillStyle = "rgba(255,255,255,0.14)";
+    ctx.fillRect(b.x, b.y, b.w, 4);
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(b.x, b.y + b.h - 4, b.w, 4);
+    ctx.fillStyle = "rgba(190,215,240,0.5)";
+    ctx.fillRect(b.x + 5, b.y + 5, 2.5, 2.5);
+    ctx.fillRect(b.x + b.w - 8, b.y + 5, 2.5, 2.5);
+    ctx.fillRect(b.x + 5, b.y + b.h - 8, 2.5, 2.5);
+    ctx.fillRect(b.x + b.w - 8, b.y + b.h - 8, 2.5, 2.5);
+  } else {
+    ctx.strokeStyle = `rgba(180,255,255,${0.18 + Math.sin(b.glow * 1.3) * 0.08})`;
+    for (let i = -b.h; i < b.w; i += 8) {
+      ctx.beginPath();
+      ctx.moveTo(b.x + i, b.y);
+      ctx.lineTo(b.x + i + b.h, b.y + b.h);
+      ctx.stroke();
+    }
+    ctx.fillStyle = `rgba(220,120,255,${0.16 + Math.sin(b.glow) * 0.08})`;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+  }
+
   if (b.burning > 0) {
     ctx.fillStyle = `rgba(255,120,40,${0.4 + Math.random() * 0.4})`;
     ctx.fillRect(b.x, b.y, b.w, b.h);
@@ -345,10 +433,42 @@ function render() {
   ctx.fill();
 
   for (const projectile of state.projectiles) {
-    ctx.fillStyle = projectile.kind === "meteor" ? "#ffca66" : "#ff6a33";
-    ctx.beginPath();
-    ctx.arc(projectile.x, projectile.y, projectile.r, 0, Math.PI * 2);
-    ctx.fill();
+    if (projectile.kind === "meteor") {
+      ctx.fillStyle = "#ffca66";
+      ctx.beginPath();
+      ctx.arc(projectile.x, projectile.y, projectile.r, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      const pulse = 0.7 + Math.sin((projectile.age || 0) * 0.35) * 0.22;
+      const grad = ctx.createRadialGradient(
+        projectile.x,
+        projectile.y,
+        1,
+        projectile.x,
+        projectile.y,
+        projectile.r * 1.7
+      );
+      grad.addColorStop(0, `rgba(255,245,180,${0.95 * pulse})`);
+      grad.addColorStop(0.45, `rgba(255,140,55,${0.88 * pulse})`);
+      grad.addColorStop(1, "rgba(255,60,0,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(projectile.x, projectile.y, projectile.r * 1.7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fff6cc";
+      ctx.beginPath();
+      ctx.arc(projectile.x + Math.sin((projectile.age || 0) * 0.7) * 1.5, projectile.y, projectile.r * 0.52, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(255,90,20,0.45)";
+      ctx.beginPath();
+      ctx.moveTo(projectile.x, projectile.y + projectile.r * 1.25);
+      ctx.lineTo(projectile.x - projectile.r * 0.9, projectile.y + projectile.r * 2.5);
+      ctx.lineTo(projectile.x + projectile.r * 0.9, projectile.y + projectile.r * 2.5);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
 
   for (const s of state.sparks) {
@@ -372,6 +492,7 @@ function render() {
   ctx.font = "16px sans-serif";
   ctx.fillText(`Score: ${state.score}`, 20, 24);
   ctx.fillText(`Bricks left: ${state.bricks.filter((b) => b.hp > 0).length}`, 20, 46);
+  ctx.fillText("Materials: wood • stone • iron • TITANIUM (fireball only)", 20, 68);
 
   if (!state.running) {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
