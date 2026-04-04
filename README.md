@@ -1,49 +1,55 @@
 # Arcane Breaker
 
-Arcane Breaker is a browser-based Arkanoid/Breakout-style game with a fantasy magic combat layer.
+Arcane Breaker is a browser-based **arcane brick-breaker** where classic paddle physics meet spellcasting combat.
 
-## Game Description
+## ✨ Restored & Enhanced Edition
 
-You control an arcane paddle to keep the orb in play while destroying enchanted brick formations.  
-In addition to classic breakout mechanics, you manage **health** and **mana** and cast spells to survive and clear the board faster.
+This version restores the project README and expands gameplay with stronger visual flair and additional spell options.
 
-### Core Features
+### Highlights
 
-- Classic paddle + ball brick-breaking gameplay.
-- HUD with:
-  - Health bar
-  - Mana bar
-  - Real-time status messages
-- Spell system:
-  - **Q**: Fireball (projectile + burning effect)
-  - **W**: Lightning (chain damage to bricks)
-  - **E**: Force Field (temporary protection)
-  - **R**: Heal (restore health)
-- Brick durability tiers and visual effects.
-- Score + combo tracking.
-- Victory and defeat states.
+- Classic breakout gameplay with fantasy combat flavor.
+- Animated magical atmosphere (aurora backdrop + drifting star field).
+- Richer impact visuals:
+  - Ball trails
+  - Spark bursts
+  - Elemental overlays (burning/frozen bricks)
+- Expanded spellbook with **6 spells**.
+- Health + mana resource loop with HUD bars.
+- Score and combo scaling for aggressive play.
 
-## Controls
+## 🎮 Controls
 
 - **Move paddle**: `A` / `D` or `←` / `→`
-- **Launch ball**: `Space`
-- **Cast Fireball**: `Q`
-- **Cast Lightning**: `W`
-- **Cast Force Field**: `E`
-- **Cast Heal**: `R`
+- **Launch orb**: `Space`
 
-## How to Run
+### Spells
 
-This project has no build step and no dependencies.
+- **Q — Fireball**: Fires a burning projectile upward.
+- **W — Lightning**: Damages top bricks with chain strikes.
+- **E — Force Field**: Temporarily blocks incoming damage.
+- **R — Heal**: Restores health.
+- **T — Frost Nova**: Freezes many bricks; frozen bricks take bonus damage.
+- **Y — Meteor Rain**: Summons heavy meteors from above.
+
+## 🧙 Gameplay Notes
+
+- You lose health when the orb falls below the paddle.
+- Mana regenerates continuously over time.
+- Bricks can have multiple hit points.
+- Burning and frozen effects stack tactical pressure on brick waves.
+- Clear all bricks to win.
+
+## 🚀 Run Locally
+
+No dependencies and no build step required.
 
 ### Option 1: Open directly
 
-1. Open `index.html` in any modern browser.
-2. Start playing.
+1. Open `index.html` in a modern browser.
+2. Play immediately.
 
-### Option 2: Run with a local static server (recommended)
-
-From the project folder:
+### Option 2: Use a local server
 
 ```bash
 python3 -m http.server 8000
@@ -53,9 +59,10 @@ Then open:
 
 - `http://localhost:8000`
 
-## Project Structure
+## 📁 Project Structure
 
-- `index.html` — main page, HUD and canvas.
-- `style.css` — visual styling.
-- `game.js` — gameplay logic and rendering.
+- `index.html` — Main layout, HUD, and canvas.
+- `style.css` — Theme, gradients, and ambient page animations.
+- `game.js` — Core game loop, rendering, collisions, and spells.
 
+Enjoy breaking enchanted wards. 🔮
