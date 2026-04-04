@@ -1,0 +1,51 @@
+:root {
+  --bg: #0e1022;
+  --panel: #181b35;
+  --accent: #8de9ff;
+  --danger: #ff7373;
+  --good: #8dff9d;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", system-ui, sans-serif;
+  color: #eef3ff;
+  background: radial-gradient(circle at top, #2b3372, #0b0d1d 72%);
+}
+.layout {
+  width: min(980px, 95vw);
+  margin: 1rem auto;
+}
+.hud {
+  background: linear-gradient(180deg, rgba(28, 34, 67, 0.95), rgba(18, 23, 50, 0.95));
+  border: 1px solid #4b57a5;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.8rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+h1 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+.bars { display: grid; gap: 0.4rem; }
+label { display: flex; align-items: center; gap: 0.6rem; }
+progress {
+  width: 240px;
+  height: 0.9rem;
+  accent-color: var(--accent);
+}
+#healthText, #manaText {
+  min-width: 2.2ch;
+  font-weight: 700;
+}
+.help, #status { margin: 0.5rem 0 0; font-size: 0.95rem; color: #c8d1ff; }
+#status {
+  color: #ffe18a;
+  min-height: 1.4rem;
+  text-shadow: 0 0 8px rgba(255, 225, 138, 0.3);
+}
+canvas {
+  width: 100%;
+  border-radius: 12px;
+  border: 2px solid #4f5bb3;
+  background: linear-gradient(180deg, #101536, #090d22);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
