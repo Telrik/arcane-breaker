@@ -1,24 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arcane Breaker</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111419">
+  <meta name="description" content="A spellcasting brick breaker. Guide the orb, master six spells, and bring down the Obsidian Tower. Play with touch, mouse, or keyboard.">
+  <title>Arcane Breaker — Break the spell</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="engine.js" defer></script>
+  <script src="game.js" defer></script>
 </head>
 <body>
-  <main class="layout">
-    <section class="hud">
-      <h1>🔮 Arcane Breaker</h1>
-      <div class="bars">
-        <label>Health <progress id="healthBar" max="100" value="100"></progress> <span id="healthText">100</span></label>
-        <label>Mana <progress id="manaBar" max="100" value="100"></progress> <span id="manaText">100</span></label>
-      </div>
-      <p class="help">Move: ⬅️ ➡️ / A D · Launch: Space · Spells: Q Fireball · W Lightning · E Force Field · R Heal · T Frost Nova · Y Meteor Rain</p>
-      <p id="status">Break all enchanted bricks!</p>
-    </section>
-    <canvas id="game" width="920" height="620" aria-label="Arcane Breaker game"></canvas>
+  <svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 24 24"><path d="M13 2c1 6-5 6-3 11 2-1 3-3 3-5 5 4 7 7 4 11-2 3-8 3-10 0-4-5 0-9 1-11 0 4 2 4 2 4-1-5 2-6 3-10Z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m14 2-9 12h6l-1 8 9-13h-6Z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 2 8 4v6c0 5-8 10-8 10S4 17 4 12V6Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-heal" viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6Z"/></symbol>
+    <symbol id="i-frost" viewBox="0 0 24 24"><path d="M12 2v20M3 7l18 10M3 17 21 7m-12-3 3 3 3-3M9 20l3-3 3 3M3 10l4-1V5m14 9-4 1v4M3 14l4 1v4M21 10l-4-1V5"/></symbol>
+    <symbol id="i-meteor" viewBox="0 0 24 24"><path d="m21 3-7 15a6 6 0 1 1-8-8ZM16 2l-4 4M22 9l-3 5"/><circle cx="8" cy="16" r="2"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 8.5a2.6 2.6 0 1 1 4.1 2.2c-1.4.8-1.6 1.3-1.6 2.8M12 17h.01"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+  </svg>
+  <main class="app">
+    <header class="header">
+      <div class="brand"><svg class="icon brand-mark"><use href="#i-spark"/></svg><div><h1>Arcane Breaker</h1><p>OLD-SCHOOL ARCADE. A LITTLE SORCERY.</p></div></div>
+      <nav class="utility" aria-label="Game controls">
+        <button id="helpButton" class="icon-button" aria-label="How to play" title="How to play"><svg class="icon"><use href="#i-help"/></svg></button>
+        <button id="pauseButton" class="icon-button" aria-label="Pause game" title="Pause (P or Escape)" disabled><svg class="icon"><use href="#i-pause"/></svg></button>
+        <button id="restartButton" class="icon-button" aria-label="Restart game" title="Restart game"><svg class="icon"><use href="#i-reset"/></svg></button>
+      </nav>
+    </header>
+    <div class="game-layout">
+      <section class="play-panel" aria-label="Game arena">
+        <div class="arena-heading"><span>01 <span class="slash">/</span> THE OBSIDIAN TOWER</span><span id="phaseLabel" class="phase">READY</span></div>
+        <div class="resources">
+          <div class="resource health"><div><label for="healthBar">VITALITY</label><span><b id="healthText">100</b><small> / 100</small></span></div><progress id="healthBar" max="100" value="100">100</progress></div>
+          <div class="resource mana"><div><label for="manaBar">MANA</label><span><b id="manaText">100</b><small> / 100</small></span></div><progress id="manaBar" max="100" value="100">100</progress></div>
+        </div>
+        <div class="arena" id="arena">
+          <canvas id="game" width="720" height="840" tabindex="0" aria-label="Arcane Breaker playfield" aria-describedby="controlsHint">Guide the orb with the arrow keys or A and D. Use Space to launch and Q, W, E, R, T, Y to cast spells.</canvas>
+          <div class="arena-stats" aria-hidden="true"><span>SCORE <strong id="score">0000</strong></span><span><strong id="remaining">77</strong> WARDS LEFT</span></div>
+          <div id="overlay" class="overlay">
+            <div class="overlay-card"><span class="eyebrow" id="overlayEyebrow">YOUR NEXT SMALL OBSESSION</span><h2 id="overlayTitle">Break the spell.</h2><p id="overlayText">An orb. Six spells.<br>A tower that won't go quietly.</p><button id="startButton" class="primary">Enter the tower <svg class="icon"><use href="#i-arrow"/></svg></button><span class="overlay-hint" id="overlayHint">Drag to guide · Tap a spell to cast</span></div>
+          </div>
+          <span class="arena-caption" id="shieldStatus">KEEP THE ORB ALIVE</span>
+        </div>
+        <div class="arena-bottom"><p id="status" role="status" aria-live="polite">The tower awaits.</p><button id="launchButton" class="launch" disabled>Launch orb <kbd>SPACE</kbd></button></div>
+      </section>
+      <aside class="spell-panel" aria-labelledby="spellHeading">
+        <div class="spell-heading"><span class="eyebrow">THE SPELLBOOK</span><h2 id="spellHeading">Make a little<br><em>magic.</em></h2><p>Six ways to turn the tide.<br>Spend wisely. Mana replenishes.</p></div>
+        <div class="spells" role="group" aria-label="Cast a spell">
+          <button class="spell fireball" data-spell="fireball" disabled><span class="spell-top"><svg class="icon"><use href="#i-fire"/></svg><kbd>Q</kbd></span><strong>Fireball</strong><span class="spell-description">Pierces titanium's defense</span><span class="cost">18 <span>MANA</span></span></button>
+          <button class="spell lightning" data-spell="lightning" disabled><span class="spell-top"><svg class="icon"><use href="#i-bolt"/></svg><kbd>W</kbd></span><strong>Lightning</strong><span class="spell-description">Strikes the top six wards</span><span class="cost">24 <span>MANA</span></span></button>
+          <button class="spell shield" data-spell="shield" disabled><span class="spell-top"><svg class="icon"><use href="#i-shield"/></svg><kbd>E</kbd></span><strong>Force Field</strong><span class="spell-description">Nine seconds of protection</span><span class="cost">30 <span>MANA</span></span></button>
+          <button class="spell heal" data-spell="heal" disabled><span class="spell-top"><svg class="icon"><use href="#i-heal"/></svg><kbd>R</kbd></span><strong>Heal</strong><span class="spell-description">Restore 26 vitality</span><span class="cost">22 <span>MANA</span></span></button>
+          <button class="spell frost" data-spell="frost" disabled><span class="spell-top"><svg class="icon"><use href="#i-frost"/></svg><kbd>T</kbd></span><strong>Frost Nova</strong><span class="spell-description">Freeze and weaken wards</span><span class="cost">26 <span>MANA</span></span></button>
+          <button class="spell meteor" data-spell="meteor" disabled><span class="spell-top"><svg class="icon"><use href="#i-meteor"/></svg><kbd>Y</kbd></span><strong>Meteor Rain</strong><span class="spell-description">Four heavy falling stars</span><span class="cost">34 <span>MANA</span></span></button>
+        </div>
+        <div class="field-notes"><span class="eyebrow">KNOW YOUR WARDS</span><div class="materials"><span><i class="wood"></i>Wood <b>2</b></span><span><i class="stone"></i>Stone <b>3</b></span><span><i class="iron"></i>Iron <b>4</b></span><span><i class="titanium"></i>Titanium <b>8</b></span></div><p><svg class="icon"><use href="#i-fire"/></svg> Titanium takes damage from Fireball only.</p></div>
+        <div class="record"><span>PERSONAL BEST</span><strong id="best">0000</strong><svg class="icon"><use href="#i-spark"/></svg></div>
+      </aside>
+    </div>
+    <footer><p id="controlsHint">Drag the arena to guide your paddle. Keyboard: A / D or arrows · Space to launch · P to pause.</p><span>STAY CURIOUS. KEEP CASTING.</span></footer>
   </main>
-  <script src="game.js"></script>
+  <dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-content"><span class="eyebrow">A QUICK INITIATION</span><h2 id="helpTitle">Master the tower.</h2><p>Destroy every ward while keeping the orb above your paddle.</p><dl><dt>Move & launch</dt><dd>Drag anywhere in the arena, or use A / D and the arrow keys. Tap the arena or press Space to launch.</dd><dt>Cast a spell</dt><dd>Tap a spell button, or use Q / W / E / R / T / Y. Mana regenerates while you play. Fireball is the only attack that damages titanium.</dd><dt>Stay alive</dt><dd>A lost orb costs 14 vitality. Force Field prevents this damage for 9 seconds; Heal restores 26 vitality. Launch another orb to continue.</dd><dt>Take a break</dt><dd>Use Pause, P, or Escape. Switching tabs pauses the game automatically. Resume when you're ready.</dd></dl><form method="dialog"><button class="primary">Got it <svg class="icon"><use href="#i-arrow"/></svg></button></form></div></dialog>
+  <noscript><p class="noscript">Enable JavaScript to play Arcane Breaker.</p></noscript>
 </body>
 </html>
