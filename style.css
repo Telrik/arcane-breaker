@@ -18,6 +18,7 @@
 
 body {
   margin:0;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   background:radial-gradient(ellipse at 55% 0,#22252e 0,transparent 65%);
   min-height:100svh;
 }
@@ -716,7 +717,7 @@ dialog::backdrop {
 @media(max-width:760px) {
   .app {
     max-width:540px;
-    padding:16px 18px calc(16px + env(safe-area-inset-bottom));
+    padding:16px 18px;
   }
   .header {
     margin-bottom:16px;
@@ -763,7 +764,7 @@ dialog::backdrop {
     margin-bottom:12px;
   }
   .arena {
-    width:min(100%,calc(clamp(240px,calc(100svh - 400px),570px)*6/7));
+    width:min(100%,calc(clamp(240px,calc(100svh - 400px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),570px)*6/7));
     height:auto;
     max-width:100%;
     margin:auto;
